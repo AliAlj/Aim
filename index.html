@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aim</title>
+    <link rel="icon" href="red dot.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="1400" height="900"></canvas>
+        <div id="controlPanel">
+            <button id="startButton">Start Game</button>
+            <button id="resetButton">Reset Game</button>
+            <div id="dotSizeOptions">
+                <h3>Select Dot Size:</h3>
+                <button class="sizeOption" data-size="10">Small Dot</button>
+                <button class="sizeOption" data-size="20">Medium Dot</button>
+                <button class="sizeOption" data-size="30">Large Dot</button>
+            </div>
+            <div id="gameStats">
+                <div id="timer">Time: 0.0s</div>
+                <div id="counter">Dots Hit: 0 / 20</div>
+                <div id="accuracy">Accuracy: 0%</div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

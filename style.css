@@ -1,0 +1,108 @@
+/* General Styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+}
+
+/* Game Screen */
+#gameContainer {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 50px;
+    width: 100%;
+    padding-left: 260px;
+}
+
+canvas {
+    width: 1400px;
+    height: 900px;
+    border: 2px solid #333;
+    background-color: #fff;
+}
+
+#controlPanel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
+    margin-top: 150px;
+}
+
+#controlPanel h3 {
+    margin: 0;
+}
+
+#controlPanel button {
+    padding: 15px 30px;
+    font-size: 18px;
+    cursor: pointer;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#controlPanel button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+#dotSizeOptions {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sizeOption {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.sizeOption:hover {
+    background-color: #0056b3;
+}
+
+.sizeOption.selected {
+    background-color: #28a745;
+    color: white;
+}
+
+/* Stats */
+#gameStats {
+    display: flex;
+    flex-direction: column;
+    font-size: 18px;
+    font-family: Arial, sans-serif;
+}
+
+#timer, #accuracy, #counter {
+    margin-bottom: 15px;
+}
+
+#resetButton {
+    padding: 15px 30px;
+    font-size: 18px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#resetButton:hover {
+    background-color: #c82333;
+}
