@@ -2,21 +2,48 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const startButton = document.getElementById("startButton");
 const resetButton = document.getElementById("resetButton");
+const gameSelect = document.getElementById("gameSelect");
+const dpiInput = document.getElementById("dpiInput");
+const sensitivityInput = document.getElementById("sensitivityInput");
+const applySettings = document.getElementById("applySettings");
+const dotSizeOptions = document.querySelectorAll(".dotSizeOption");
 const timerDiv = document.getElementById("timer");
 const accuracyDiv = document.getElementById("accuracy");
 const counterDiv = document.getElementById("counter");
-const sizeOptions = document.querySelectorAll(".sizeOption");
 
 let dotsHit = 0;
-let totalDots = 20; // Total number of dots for the game
-let clicksMade = 0; // Total number of clicks (hits + misses)
+let totalDots = 20;
+let clicksMade = 0;
 let gameStarted = false;
 let timerStart = null;
-let timerInterval = null;
 let dotPosition = {};
 let dotSize = 10; // Default dot size
+let crosshairX = canvas.width / 2;
+let crosshairY = canvas.height / 2;
+let sensitivity = 1.0;
+let isPointerLocked = false;
 
-// Spawn a dot at a random position
+// Function to calculate sensitivity
+const calculateSensitivity = (game, dpi, sensitivity) => {
+    const scalingFactor = 0.005; // Adjust sensitivity scale for smoother movement
+    if (game === "csgo") {
+        return dpi * sensitivity * scalingFactor;
+    } else if (game === "valorant") {
+        return dpi * sensitivity * scalingFactor * 0.426;
+    }
+    return 1.0;
+};
+
+// Update dot size when clicked
+dotSizeOptions.forEach((button) => {
+    button.addEventListener("click", (e) => {
+        dotSize = parseInt(e.target.dataset.size);
+        dotSizeOptions.forEach((btn) => btn.classList.remove("active"));
+        e.target.classList.add("active");
+    });
+});
+
+// Function to spawn a dot
 const spawnDot = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -24,100 +51,140 @@ const spawnDot = () => {
     const y = Math.random() * (canvas.height - 2 * dotSize) + dotSize;
     dotPosition = { x, y };
 
-    // Draw the dot as a circle
     ctx.beginPath();
     ctx.arc(x, y, dotSize, 0, Math.PI * 2);
     ctx.fillStyle = "red";
     ctx.fill();
     ctx.closePath();
+
+    drawCrosshair();
 };
 
-// Update the timer
-const updateTimer = () => {
-    if (gameStarted) {
-        const elapsedTime = ((performance.now() - timerStart) / 1000).toFixed(1); // Rounded to the tenth
-        timerDiv.textContent = `Time: ${elapsedTime}s`;
-    }
+// Draw crosshair
+const drawCrosshair = () => {
+    // Clear the entire canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Redraw the current dot
+    ctx.beginPath();
+    ctx.arc(dotPosition.x, dotPosition.y, dotSize, 0, Math.PI * 2);
+    ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.closePath();
+
+    // Draw horizontal crosshair line
+    ctx.beginPath();
+    ctx.moveTo(crosshairX - 15, crosshairY);
+    ctx.lineTo(crosshairX + 15, crosshairY);
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.closePath();
+
+    // Draw vertical crosshair line
+    ctx.beginPath();
+    ctx.moveTo(crosshairX, crosshairY - 15);
+    ctx.lineTo(crosshairX, crosshairY + 15);
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.closePath();
 };
+
+// Handle mouse movement (crosshair movement)
+document.addEventListener("mousemove", (e) => {
+    if (!isPointerLocked) return;
+
+    // Adjust crosshair position based on mouse movement and sensitivity
+    crosshairX += e.movementX * sensitivity;
+    crosshairY += e.movementY * sensitivity;
+
+    // Constrain crosshair within the canvas bounds
+    crosshairX = Math.max(0, Math.min(canvas.width, crosshairX));
+    crosshairY = Math.max(0, Math.min(canvas.height, crosshairY));
+
+    // Redraw the crosshair
+    drawCrosshair();
+});
+
+// Handle mouse clicks (dot hit detection)
+canvas.addEventListener("click", () => {
+    if (!gameStarted) return;
+
+    clicksMade++;
+
+    // Check if the click is within the dot's area
+    const distance = Math.sqrt(
+        (crosshairX - dotPosition.x) ** 2 + (crosshairY - dotPosition.y) ** 2
+    );
+
+    if (distance <= dotSize) {
+        dotsHit++;
+    }
+
+    // Update stats
+    updateAccuracy();
+    updateCounter();
+
+    if (clicksMade >= totalDots) {
+        endGame();
+    } else {
+        spawnDot();
+    }
+});
 
 // Update accuracy
 const updateAccuracy = () => {
-    const accuracy = clicksMade > 0 ? (dotsHit / clicksMade) * 100 : 0; // Accuracy based on hits vs total clicks
+    const accuracy = clicksMade > 0 ? (dotsHit / clicksMade) * 100 : 0;
     accuracyDiv.textContent = `Accuracy: ${accuracy.toFixed(2)}%`;
 };
 
-// Update counter
+// Update dots hit counter
 const updateCounter = () => {
     counterDiv.textContent = `Dots Hit: ${dotsHit} / ${totalDots}`;
 };
 
+// Start the game
+startButton.addEventListener("click", () => {
+    clicksMade = 0;
+    dotsHit = 0;
+    gameStarted = true;
+    timerStart = performance.now();
+    spawnDot();
+    canvas.requestPointerLock();
+    resetButton.style.display = "block";
+});
+
 // End the game
 const endGame = () => {
     gameStarted = false;
-    clearInterval(timerInterval);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const finalTime = ((performance.now() - timerStart) / 1000).toFixed(1); // Final time to the tenth
-    timerDiv.textContent = `Final Time: ${finalTime}s`;
-    updateAccuracy(); // Ensure accuracy is updated at the end
+    document.exitPointerLock();
+    timerDiv.textContent = `Game Over!`;
+    resetButton.style.display = "block";
 };
 
 // Reset the game
-const resetGame = () => {
+resetButton.addEventListener("click", () => {
     gameStarted = false;
-    dotsHit = 0;
     clicksMade = 0;
+    dotsHit = 0;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    clearInterval(timerInterval);
     timerDiv.textContent = "Time: 0.0s";
-    counterDiv.textContent = `Dots Hit: 0 / ${totalDots}`;
     accuracyDiv.textContent = "Accuracy: 0%";
-};
-
-// Canvas click event
-canvas.addEventListener("click", (e) => {
-    if (!gameStarted) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
-
-    const distance = Math.sqrt(
-        (clickX - dotPosition.x) ** 2 + (clickY - dotPosition.y) ** 2
-    );
-
-    clicksMade++; // Increment total clicks
-    if (distance <= dotSize) {
-        dotsHit++; // Increment hits only if click is inside the dot
-    }
-
-    updateCounter();
-    updateAccuracy();
-
-    // Check if the game is over
-    if (clicksMade >= totalDots) {
-        endGame();
-    } else {
-        spawnDot(); // Spawn a new dot
-    }
+    counterDiv.textContent = "Dots Hit: 0 / 20";
 });
 
-// Start the game
-startButton.addEventListener("click", () => {
-    resetGame(); // Reset stats when starting
-    timerStart = performance.now();
-    gameStarted = true;
-    spawnDot();
-    timerInterval = setInterval(updateTimer, 100);
+// Pointer lock change event
+document.addEventListener("pointerlockchange", () => {
+    isPointerLocked = document.pointerLockElement === canvas;
+    resetButton.style.display = isPointerLocked ? "none" : "block";
 });
 
-// Reset button click event
-resetButton.addEventListener("click", resetGame);
-
-// Set dot size and highlight selection
-sizeOptions.forEach((option) => {
-    option.addEventListener("click", (e) => {
-        dotSize = parseInt(option.dataset.size); // Set dot size
-        sizeOptions.forEach((opt) => opt.classList.remove("selected")); // Remove selection highlight
-        option.classList.add("selected"); // Highlight the selected option
-    });
+// Apply sensitivity settings
+applySettings.addEventListener("click", () => {
+    const game = gameSelect.value;
+    const dpi = parseFloat(dpiInput.value);
+    const inGameSensitivity = parseFloat(sensitivityInput.value);
+    sensitivity = calculateSensitivity(game, dpi, inGameSensitivity);
+    alert(`Sensitivity applied: ${sensitivity.toFixed(2)}`);
 });

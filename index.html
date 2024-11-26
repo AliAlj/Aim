@@ -4,20 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aim</title>
-    <link rel="icon" href="red dot.png" type="image/png">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="gameContainer">
-        <canvas id="gameCanvas" width="1400" height="900"></canvas>
+        <canvas id="gameCanvas" width="1200" height="900"></canvas>
         <div id="controlPanel">
             <button id="startButton">Start Game</button>
-            <button id="resetButton">Reset Game</button>
-            <div id="dotSizeOptions">
-                <h3>Select Dot Size:</h3>
-                <button class="sizeOption" data-size="10">Small Dot</button>
-                <button class="sizeOption" data-size="20">Medium Dot</button>
-                <button class="sizeOption" data-size="30">Large Dot</button>
+            <button id="resetButton" style="display: none;">Reset Game</button>
+            <div id="settingsMenu">
+                <h3>Settings</h3>
+                <label for="gameSelect">Select Game:</label>
+                <select id="gameSelect">
+                    <option value="csgo">CS:GO</option>
+                    <option value="valorant">Valorant</option>
+                </select>
+                <label for="dpiInput">Mouse DPI:</label>
+                <input type="number" id="dpiInput" value="800">
+                <label for="sensitivityInput">In-Game Sensitivity:</label>
+                <input type="number" id="sensitivityInput" value="1.0" step="0.01">
+                <button id="applySettings">Apply Settings</button>
+            </div>
+            <div id="dotSizeMenu">
+                <h3>Dot Size</h3>
+                <button class="dotSizeOption active" data-size="10">Small</button>
+                <button class="dotSizeOption" data-size="20">Medium</button>
+                <button class="dotSizeOption" data-size="30">Large</button>
             </div>
             <div id="gameStats">
                 <div id="timer">Time: 0.0s</div>
